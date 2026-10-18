@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Issue 工作台 · GitHub Issue 助手</title>
+    <link rel="stylesheet" href="/static/style.css" />
+    <script src="/static/app.js" defer></script>
+    <script src="/static/convenience.js" defer></script>
+  </head>
+  <body>
+    <header>
+      <div class="brand">
+        <span class="mark">I</span>
+        <div>
+          <strong>Issue 工作台</strong
+          ><small>GitHub Issue 分析与处理助手 · V5.1</small>
+        </div>
+      </div>
+      <div class="health">
+        <span id="health">连接中…</span
+        ><a href="/docs" target="_blank" rel="noopener">API 文档 ↗</a>
+      </div>
+    </header>
+    <div id="demo" class="banner" hidden>
+      离线演示：分析和 GitHub 响应均为模拟，不会访问 GitHub 或模型接口。
+    </div>
+    <div id="notice" role="status" aria-live="polite"></div>
+    <div class="layout">
+      <aside>
+        <div class="row">
+          <h2>最近会话</h2>
+          <button id="refresh-list" class="quiet">刷新</button>
+        </div>
+        <p class="muted">每个会话固定一个 Issue</p>
+        <div id="sessions"></div>
+        <div class="row">
+          <button id="previous" class="quiet">上一页</button
+          ><button id="next" class="quiet">下一页</button>
+        </div>
+        <label for="restore-id">按会话 ID 恢复</label>
+        <div class="row">
+          <input id="restore-id" placeholder="会话 UUID" /><button
+            id="restore"
+            class="quiet"
+          >
+            打开
+          </button>
+        </div>
+      </aside>
+      <main>
+        <section class="card storage-card">
+          <div class="row spread">
+            <div>
+              <strong id="storage-saved">正在检查本机保存状态…</strong
+              ><small id="storage-backup" class="block muted"></small>
+            </div>
+            <button id="backup-now" class="quiet">备份已保存数据</button>
+          </div>
+          <details>
+            <summary>数据文件与恢复说明</summary>
+            <p id="storage-path" class="muted"></p>
+            <p>
+              分析完成、补充信息和保存草稿后写入同一份数据库。备份在后台合并执行，最近10份自动备份保存在backups目录；同盘备份不能防磁盘损坏，重要演示后可将备份文件及同名JSON一起复制到外部存储。恢复步骤见项目README。
+            </p>
+          </details>
+        </section>
+
+        <section class="card">
+          <div class="eyebrow">01 / 开始处理</div>
+          <h1>从一个 Issue 开始</h1>
+          <p class="muted">
+            读取正文与评论，检索固定版本资料，生成待核对的建议和回复草稿。
+          </p>
+          <details id="examples-panel">
+            <summary>没有自己的 Issue？选择一个只读案例</summary>
+            <label for="example-picker">公开真实案例 / 离线教学案例</label
+            ><select id="example-picker">
+              <option value="">请选择案例</option>
+            </select>
+            <p id="example-description" class="muted">
+              真实案例读取固定公开Issue，调用DeepSeek，但无需GitHub
+              token；教学案例无需网络和任何密钥。
+            </p>
+            <button id="open-example" class="quiet">打开并分析选中案例</button>
+          </details>
+          <form id="create-form">
+            <label for="issue-url">Issue 链接</label>
+            <div class="row">
+              <input
+                id="issue-url"
+                type="url"
+                required
+                placeholder="https://github.com/owner/repo/issues/1"
+              /><button id="create" type="submit">新建并分析</button>
+            </div>
+            <label class="check"
+              ><input
+                id="use-knowledge"
+                type="checkbox"
+                checked
+              />检索项目知识库</label
+            ><small id="repository" class="muted"></small>
+          </form>
+        </section>
+        <div id="workspace" hidden>
+          <div id="source-note" class="banner" hidden></div>
+          <pre id="teaching-input" hidden></pre>
+          <section class="card">
+            <div class="row spread">
+              <div>
+                <div class="eyebrow">当前会话</div>
+                <a id="target" target="_blank" rel="noopener"></a
+                ><small id="session-meta" class="muted block"></small>
+              </div>
+              <div class="row">
+                <span id="task-state" class="badge">就绪</span
+                ><button id="refresh" class="quiet">刷新状态</button
+                ><button id="cancel-task" class="danger" hidden>
+                  取消分析
+                </button>
+              </div>
+            </div>
+            <p id="task-error" class="error" hidden></p>
+            <div id="analysis" hidden>
+              <h2>问题摘要</h2>
+              <p id="summary"></p>
+              <span id="category" class="badge"></span>
+              <div class="columns">
+                <div>
+                  <h3>已知信息</h3>
+                  <ul id="known"></ul>
+                </div>
+                <div>
+                  <h3>需要补充</h3>
+                  <ul id="missing"></ul>
+                </div>
+              </div>
+              <h3>有依据的建议</h3>
+              <ul id="recommendations"></ul>
+              <p id="evidence-status" class="muted"></p>
+            </div>
+            <div class="columns">
+              <div>
+                <label for="supplement">补充环境、报错或复现信息</label
+                ><textarea
+                  id="supplement"
+                  maxlength="3000"
+                  rows="3"
+                  placeholder="请先脱敏，不要填写密钥"
+                ></textarea>
+                <div class="row">
+                  <button id="add-supplement" class="quiet">保存补充</button
+                  ><button id="analyze-again">继续分析</button>
+                </div>
+              </div>
+              <div>
+                <h3>已保存的补充</h3>
+                <ul id="supplements"></ul>
+              </div>
+            </div>
+          </section>
+          <section class="card">
+            <div class="eyebrow">02 / 证据与执行过程</div>
+            <h2>实际读取了什么</h2>
+            <p id="warnings" class="muted"></p>
+            <div id="evidence"></div>
+            <details>
+              <summary>MCP 工具调用</summary>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>工具 / 参数</th>
+                      <th>状态</th>
+                      <th>耗时</th>
+                      <th>返回大小</th>
+                    </tr>
+                  </thead>
+                  <tbody id="trace"></tbody>
+                </table>
+              </div>
+              <p id="trace-empty" class="muted"></p>
+            </details>
+            <details>
+              <summary>耗时与模型用量</summary>
+              <pre id="metrics"></pre>
+              <small class="muted"
+                >阶段有包含关系，不能相加；token
+                是接口实际返回值，缺失时显示未提供。</small
+              >
+            </details>
+            <details>
+              <summary>完整分析结果 JSON</summary>
+              <pre id="raw-result"></pre>
+            </details>
+          </section>
+          <section class="card">
+            <div class="eyebrow">03 / 编辑与人工确认</div>
+            <h2>回复草稿</h2>
+            <label for="draft">检查依据与措辞后保存</label
+            ><textarea id="draft" rows="7" maxlength="3000"></textarea>
+            <div class="row">
+              <button id="save-draft">保存草稿</button
+              ><span id="draft-status" class="muted"></span>
+            </div>
+            <hr />
+            <div class="row">
+              <button id="preview-comment" class="quiet">预览发布评论</button
+              ><button id="load-labels" class="quiet">读取已有标签</button>
+            </div>
+            <div id="label-panel" hidden>
+              <label for="labels"
+                >已有标签（最多选 5 个，可按 Ctrl / ⌘ 多选）</label
+              ><select id="labels" multiple size="5"></select
+              ><button id="preview-labels" class="quiet">预览添加标签</button>
+            </div>
+            <p id="write-config" class="muted"></p>
+            <h3>操作记录</h3>
+            <div id="operations"></div>
+            <div id="approval" class="approval" hidden>
+              <h3 id="operation-title"></h3>
+              <p id="operation-state"></p>
+              <p id="operation-meta" class="muted"></p>
+              <pre id="operation-content"></pre>
+              <p id="operation-error" class="error"></p>
+              <div id="confirmation">
+                <label class="check"
+                  ><input
+                    id="reviewed"
+                    type="checkbox"
+                  />我已核对目标和上方完整内容</label
+                ><label for="confirmation-text">输入以下确认文本</label
+                ><code id="expected-text" class="block"></code
+                ><input id="confirmation-text" autocomplete="off" /><button
+                  id="confirm-execute"
+                  disabled
+                >
+                  确认并执行
+                </button>
+              </div>
+              <div class="row">
+                <button id="cancel-operation" class="quiet" hidden>
+                  取消此操作</button
+                ><button id="reconcile" class="quiet" hidden>
+                  只读核对未知结果</button
+                ><button id="refresh-operation" class="quiet">刷新操作</button>
+              </div>
+              <label id="comment-id-label" for="comment-id" hidden
+                >可选：已找到的评论 ID，用于定点核对</label
+              ><input id="comment-id" type="number" min="1" hidden /><a
+                id="operation-link"
+                target="_blank"
+                rel="noopener"
+                hidden
+                >查看 GitHub 评论 ↗</a
+              >
+              <pre id="operation-result"></pre>
+            </div>
+          </section>
+        </div>
+        <footer>
+          分析和检索不等于已复现或验证方案。写入始终由你确认具体内容。
+        </footer>
+      </main>
+    </div>
+  </body>
+</html>

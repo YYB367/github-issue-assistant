@@ -1,0 +1,21 @@
+# Direct dependencies. Install requirements.lock for the verified full dependency set.
+fastapi==0.143.0
+pydantic==2.14.1
+pydantic-settings==2.15.0
+uvicorn==0.54.0
+mcp==1.30.0
+openai==3.19.2
+httpx==0.28.1
+# openai 3 uses HTTPX2; tests mock this actual transport, not HTTPX 0.x.
+httpx2==2.13.1
+pytest==9.1.1
+pytest-asyncio==1.4.0
+# V2 local knowledge store and CPU embedding; no hosted embedding API.
+chromadb==1.5.9
+fastembed==0.9.0
+markdown-it-py==4.0.0
+tokenizers==0.23.3
+huggingface-hub==1.33.0
+numpy==2.5.4
+filelock==4.1.1
+tiktoken==0.14.0

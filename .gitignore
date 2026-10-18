@@ -1,0 +1,28 @@
+.env
+.env.*
+!.env.example
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+work/
+*.log
+.cache/
+*.sqlite
+*.sqlite3
+*.sqlite-*
+*.sqlite3-*
+*.db
+*.db-*
+*.zip
+.DS_Store
+Thumbs.db
+
+# Generated reports can contain local paths, conversations and operation records.
+/verification/*
+!/verification/README.md
+# Personal interface-practice conversation; keep it locally.
+/docs/side-conversation-v3-interface-practice-2026-10-16.md

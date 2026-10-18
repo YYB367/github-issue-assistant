@@ -1,0 +1,10 @@
+[project]
+name = "github-issue-assistant"
+version = "0.5.1"
+description = "V5: local issue workbench, safe observability and reproducible operation"
+requires-python = ">=3.12,<3.13"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+pythonpath = ["."]

@@ -1,0 +1,11 @@
+{
+  "split": "evaluation",
+  "note": "These exact queries were not used to choose chunking, query prefix or threshold. Record results; do not tune against them.",
+  "cases": [
+    {"id":"E20","query":"本项目最少需要哪个Node版本，依赖安装命令是什么？","expected_facts":["Node.js 20","npm.cmd install"],"expected_support":true},
+    {"id":"E21","query":"命令被PowerShell的脚本限制挡住，仓库建议怎样处理？","expected_facts":["npm.cmd"],"expected_support":true},
+    {"id":"E22","query":"Continue要读取DeepSeek的凭证，应该使用哪个本地文件？","expected_facts":[".continue/.env"],"expected_support":true},
+    {"id":"E23","query":"Chroma持久化数据损坏后怎么恢复向量索引？","expected_facts":[],"expected_support":false},
+    {"id":"E24","query":"如何修复缺失C++编译工具导致的node-gyp安装错误？","expected_facts":[],"expected_support":false}
+  ]
+}
